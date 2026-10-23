@@ -1,0 +1,2204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ahsan.Dev — DevOps, LLMOps, DaVinci Resolve & Game Dev</title>
+  <!-- Google Fonts: Space Grotesk, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --bg-deep: #020f09;
+      --bg-surface: #041a11;
+      --bg-card: rgba(6, 32, 22, 0.55);
+      --bg-card-hover: rgba(10, 48, 33, 0.7);
+      
+      --emerald-50: #ecfdf5;
+      --emerald-300: #6ee7b7;
+      --emerald-400: #34d399;
+      --emerald-500: #10b981;
+      --emerald-600: #059669;
+      --emerald-800: #064e3b;
+      --emerald-glow: rgba(16, 185, 129, 0.35);
+      --emerald-glow-soft: rgba(16, 185, 129, 0.12);
+      
+      --text-main: #f0fdf4;
+      --text-muted: #94a3b8;
+      --text-emerald: #34d399;
+
+      /* Glassmorphism + Neumorphic shadows */
+      --glass-border: 1px solid rgba(52, 211, 153, 0.22);
+      --glass-border-hover: 1px solid rgba(110, 231, 183, 0.45);
+      --glass-blur: blur(20px);
+      
+      /* Neumorphism layered depths */
+      --neu-outer: 8px 8px 24px rgba(0, 0, 0, 0.6), -4px -4px 16px rgba(16, 185, 129, 0.06);
+      --neu-inset: inset 3px 3px 6px rgba(0, 0, 0, 0.7), inset -2px -2px 6px rgba(52, 211, 153, 0.15);
+      --neu-btn: 5px 5px 15px rgba(0, 0, 0, 0.5), -3px -3px 10px rgba(16, 185, 129, 0.08);
+      --neu-btn-active: inset 3px 3px 8px rgba(0,0,0,0.7), inset -2px -2px 6px rgba(16, 185, 129, 0.15);
+
+      --font-heading: 'Space Grotesk', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      cursor: default;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+      selection-background-color: var(--emerald-500);
+      selection-color: #000;
+    }
+
+    ::selection {
+      background: var(--emerald-500);
+      color: #020f09;
+    }
+
+    /* Interactive Canvas Background */
+    #motion-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.65;
+    }
+
+    /* Ambient Emerald Lights */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: 0;
+      pointer-events: none;
+      animation: floatOrb 18s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
+      top: -100px;
+      left: -100px;
+    }
+    .orb-2 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, transparent 70%);
+      bottom: -150px;
+      right: -100px;
+      animation-delay: -9s;
+    }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 80px) scale(1.15); }
+      100% { transform: translate(-40px, 40px) scale(0.95); }
+    }
+
+    /* Custom Cursor */
+    .cursor-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--emerald-400);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s;
+      box-shadow: 0 0 10px var(--emerald-400);
+    }
+    .cursor-outline {
+      width: 32px;
+      height: 32px;
+      border: 1.5px solid rgba(52, 211, 153, 0.5);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease-out, width 0.25s, height 0.25s, border-color 0.25s;
+    }
+
+    /* Top Glass Navbar */
+    .glass-header {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 48px);
+      max-width: 1400px;
+      height: 70px;
+      background: rgba(4, 26, 17, 0.7);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: var(--glass-border);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 1000;
+      box-shadow: var(--neu-outer);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brand-logo .emerald-cube {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #10b981, #047857);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px var(--emerald-glow), inset 1px 1px 2px rgba(255,255,255,0.4);
+      color: #020f09;
+      transform: rotate(-6deg);
+      transition: var(--transition);
+    }
+    .brand-logo:hover .emerald-cube {
+      transform: rotate(0deg) scale(1.1);
+    }
+    .brand-logo span span {
+      color: var(--emerald-400);
+    }
+
+    /* Audio Toggle & Quick Status */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: 30px;
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--emerald-300);
+      box-shadow: var(--neu-inset);
+    }
+    .status-pulse {
+      width: 7px;
+      height: 7px;
+      background: var(--emerald-400);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--emerald-400);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.8); }
+    }
+
+    .icon-neu-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(6, 32, 22, 0.8);
+      border: var(--glass-border);
+      color: var(--emerald-300);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--neu-btn);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .icon-neu-btn:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--emerald-400);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px var(--emerald-glow-soft);
+    }
+    .icon-neu-btn:active {
+      box-shadow: var(--neu-btn-active);
+      transform: translateY(0);
+    }
+
+    /* Lateral Page Navigator / Sidebar Dock (10 Pages) */
+    .nav-dock {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(4, 26, 17, 0.7);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: var(--glass-border);
+      border-radius: 28px;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 1000;
+      box-shadow: var(--neu-outer);
+    }
+
+    .nav-dot-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .nav-dot-item:hover, .nav-dot-item.active {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--emerald-400);
+      color: var(--emerald-300);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.3), var(--neu-inset);
+    }
+    .nav-dot-item .nav-tooltip {
+      position: absolute;
+      right: 56px;
+      background: rgba(2, 20, 13, 0.95);
+      border: var(--glass-border);
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-family: var(--font-heading);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      color: var(--emerald-300);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(10px);
+      transition: var(--transition);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    .nav-dot-item:hover .nav-tooltip {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Main Container for 10 Pages */
+    main#app-container {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      padding: 110px 90px 40px 40px;
+      z-index: 10;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    /* Page View Containers */
+    .page-section {
+      display: none;
+      opacity: 0;
+      transform: translateY(24px) scale(0.99);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .page-section.active-page {
+      display: block;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Common Card Styles */
+    .neu-glass-card {
+      background: var(--bg-card);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: var(--glass-border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--neu-outer);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .neu-glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.4), transparent);
+    }
+    .neu-glass-card:hover {
+      border-color: rgba(52, 211, 153, 0.4);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7), 0 0 24px rgba(16, 185, 129, 0.15);
+      transform: translateY(-3px);
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      color: var(--emerald-400);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      background: rgba(16, 185, 129, 0.08);
+      padding: 4px 12px;
+      border-radius: 30px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 30%, var(--emerald-300) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      max-width: 750px;
+      margin-bottom: 36px;
+    }
+
+    /* Buttons */
+    .btn-emerald-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #020f09;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 14px 28px;
+      border-radius: 14px;
+      border: none;
+      box-shadow: 0 0 20px var(--emerald-glow), var(--neu-btn);
+      transition: var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-emerald-primary:hover {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      box-shadow: 0 0 28px rgba(16, 185, 129, 0.6);
+      transform: translateY(-2px);
+      color: #000;
+    }
+    .btn-emerald-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(4, 26, 17, 0.6);
+      color: var(--emerald-300);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 14px 28px;
+      border-radius: 14px;
+      border: var(--glass-border);
+      box-shadow: var(--neu-btn);
+      transition: var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-emerald-outline:hover {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--emerald-400);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* PAGE 1: HERO */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 36px;
+      min-height: calc(85vh - 100px);
+      align-items: center;
+    }
+    .hero-kicker {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--emerald-400);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hero-title {
+      font-family: var(--font-heading);
+      font-size: 4rem;
+      font-weight: 800;
+      line-height: 1.05;
+      margin-bottom: 24px;
+      letter-spacing: -1.5px;
+    }
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, #34d399 20%, #10b981 60%, #a7f3d0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 28px 0;
+    }
+    .tag-chip {
+      background: rgba(6, 32, 22, 0.7);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      color: var(--emerald-300);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--neu-inset);
+    }
+    .hero-interactive-card {
+      position: relative;
+      height: 480px;
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(4, 26, 17, 0.7), rgba(2, 15, 9, 0.9));
+      border: var(--glass-border);
+      box-shadow: var(--neu-outer);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero-3d-orbit {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .orbit-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(52, 211, 153, 0.35);
+      animation: spin 20s linear infinite;
+    }
+    .ring-1 { width: 100%; height: 100%; }
+    .ring-2 { width: 140%; height: 140%; animation-direction: reverse; animation-duration: 25s; border-color: rgba(16, 185, 129, 0.2); }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .core-avatar {
+      width: 110px;
+      height: 110px;
+      background: radial-gradient(circle, #10b981 0%, #064e3b 80%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #020f09;
+      box-shadow: 0 0 35px var(--emerald-glow), var(--neu-outer);
+      z-index: 2;
+    }
+    .floating-mini-badge {
+      position: absolute;
+      background: rgba(4, 26, 17, 0.9);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--emerald-300);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      animation: floatBadge 6s ease-in-out infinite alternate;
+    }
+    .badge-devops { top: 10%; left: 0%; animation-delay: 0s; }
+    .badge-llmops { bottom: 15%; right: 0%; animation-delay: -2s; }
+    .badge-resolve { top: 20%; right: -5%; animation-delay: -4s; }
+    @keyframes floatBadge {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-12px); }
+    }
+
+    /* PAGE 2: ABOUT */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 32px;
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .stat-box {
+      text-align: center;
+      padding: 20px 10px;
+      background: rgba(6, 32, 22, 0.4);
+      border-radius: 18px;
+      border: var(--glass-border);
+      box-shadow: var(--neu-inset);
+    }
+    .stat-number {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--emerald-400);
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    /* PAGE 3: DEVOPS */
+    .pipeline-container {
+      background: rgba(3, 20, 13, 0.6);
+      border-radius: 20px;
+      border: var(--glass-border);
+      padding: 24px;
+      box-shadow: var(--neu-inset);
+      margin-bottom: 30px;
+      overflow-x: auto;
+    }
+    .pipeline-flow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 700px;
+      position: relative;
+    }
+    .pipeline-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 2;
+    }
+    .stage-icon {
+      width: 58px;
+      height: 58px;
+      background: rgba(6, 36, 25, 0.9);
+      border: 1.5px solid var(--emerald-500);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--emerald-300);
+      box-shadow: 0 0 16px var(--emerald-glow), var(--neu-btn);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .stage-icon:hover {
+      transform: scale(1.1);
+      border-color: #fff;
+    }
+    .pipeline-line {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, var(--emerald-500), var(--emerald-300));
+      margin: 0 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pipeline-line::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -50%;
+      width: 50%;
+      height: 100%;
+      background: #fff;
+      animation: pipeData 2s infinite linear;
+    }
+    @keyframes pipeData {
+      0% { left: -50%; }
+      100% { left: 150%; }
+    }
+    .devops-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    /* PAGE 4: LLMOPS */
+    .llmops-workbench {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+    .benchmark-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+    .benchmark-table th {
+      text-align: left;
+      padding: 12px;
+      color: var(--emerald-400);
+      border-bottom: 1px solid rgba(52, 211, 153, 0.2);
+    }
+    .benchmark-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(2, 15, 9, 0.8);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 6px;
+      box-shadow: var(--neu-inset);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--emerald-600), var(--emerald-400));
+      border-radius: 4px;
+    }
+
+    /* PAGE 5: MACHINE LEARNING */
+    .ml-architecture-diagram {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .layer-card {
+      background: rgba(4, 26, 17, 0.6);
+      border: var(--glass-border);
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      box-shadow: var(--neu-outer);
+    }
+    .layer-card h4 {
+      font-family: var(--font-mono);
+      color: var(--emerald-300);
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    /* PAGE 6: GAME DEV */
+    .gamedev-viewport-box {
+      background: #020b07;
+      border-radius: 20px;
+      border: var(--glass-border);
+      height: 320px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--neu-inset);
+    }
+    #game-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .viewport-overlay {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(4, 26, 17, 0.8);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      border-radius: 10px;
+      padding: 6px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--emerald-400);
+      pointer-events: none;
+    }
+
+    /* PAGE 7: DAVINCI RESOLVE / MOTION */
+    .color-wheels-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    .wheel-card {
+      background: rgba(3, 20, 13, 0.5);
+      border-radius: 20px;
+      border: var(--glass-border);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: var(--neu-outer);
+    }
+    .interactive-wheel {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);
+      padding: 6px;
+      position: relative;
+      margin: 16px 0;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8), var(--neu-outer);
+      cursor: crosshair;
+    }
+    .wheel-inner-target {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(2, 15, 9, 0.65);
+      backdrop-filter: blur(2px);
+      position: relative;
+    }
+    .wheel-cursor-point {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: var(--emerald-400);
+      position: absolute;
+      top: 45%;
+      left: 45%;
+      pointer-events: none;
+      box-shadow: 0 0 10px var(--emerald-400);
+    }
+
+    /* PAGE 8: YOUTUBE / CREATOR */
+    .youtube-stats-banner {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .video-card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .video-mockup {
+      height: 150px;
+      background: linear-gradient(135deg, #062b1e, #02120a);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border: var(--glass-border);
+      margin-bottom: 14px;
+      box-shadow: var(--neu-inset);
+    }
+    .play-pulse-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #020f09;
+      box-shadow: 0 0 20px var(--emerald-glow);
+      transition: var(--transition);
+    }
+    .video-mockup:hover .play-pulse-btn {
+      transform: scale(1.15);
+      background: #34d399;
+    }
+
+    /* PAGE 9: PROJECTS MATRIX */
+    .filter-pills {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 8px 18px;
+      border-radius: 12px;
+      border: var(--glass-border);
+      background: rgba(4, 26, 17, 0.6);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-family: var(--font-heading);
+      cursor: pointer;
+      box-shadow: var(--neu-btn);
+      transition: var(--transition);
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--emerald-400);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+    }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    /* PAGE 10: TERMINAL & CONTACT */
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .terminal-window {
+      background: #020e09;
+      border-radius: 20px;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      box-shadow: var(--neu-outer), var(--neu-inset);
+      overflow: hidden;
+      font-family: var(--font-mono);
+    }
+    .terminal-header {
+      background: rgba(6, 32, 22, 0.8);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(52, 211, 153, 0.15);
+    }
+    .terminal-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+    .terminal-body {
+      padding: 20px;
+      min-height: 340px;
+      max-height: 420px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #a7f3d0;
+    }
+    .terminal-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .terminal-prompt {
+      color: var(--emerald-400);
+      font-weight: 700;
+    }
+    .terminal-cli-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      flex: 1;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      color: var(--emerald-400);
+      margin-bottom: 8px;
+    }
+    .neu-input, .neu-textarea {
+      width: 100%;
+      background: rgba(3, 20, 13, 0.8);
+      border: var(--glass-border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      box-shadow: var(--neu-inset);
+      outline: none;
+      transition: var(--transition);
+    }
+    .neu-input:focus, .neu-textarea:focus {
+      border-color: var(--emerald-400);
+      box-shadow: inset 3px 3px 6px rgba(0,0,0,0.8), 0 0 12px var(--emerald-glow-soft);
+    }
+
+    /* Command Palette Modal (Cmd+K) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(2, 10, 6, 0.75);
+      backdrop-filter: blur(12px);
+      z-index: 5000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .cmd-palette {
+      width: 90%;
+      max-width: 620px;
+      background: rgba(4, 26, 17, 0.95);
+      border: 1px solid var(--emerald-400);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px var(--emerald-glow);
+      overflow: hidden;
+      animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalPop {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .cmd-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(52, 211, 153, 0.2);
+    }
+    .cmd-search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      width: 100%;
+    }
+    .cmd-results-list {
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 12px;
+    }
+    .cmd-item {
+      padding: 12px 18px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .cmd-item:hover, .cmd-item.selected {
+      background: rgba(16, 185, 129, 0.15);
+      color: #fff;
+    }
+
+    /* Media Queries / Responsive */
+    @media (max-width: 1024px) {
+      main#app-container {
+        padding: 110px 24px 60px 24px;
+      }
+      .nav-dock {
+        bottom: 16px;
+        top: auto;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        flex-direction: row;
+        width: calc(100% - 32px);
+        max-width: 580px;
+        overflow-x: auto;
+        border-radius: 20px;
+        padding: 8px 12px;
+      }
+      .nav-dot-item .nav-tooltip {
+        display: none;
+      }
+      .hero-grid, .about-grid, .llmops-workbench, .contact-layout {
+        grid-template-columns: 1fr;
+      }
+      .devops-grid, .projects-grid, .video-card-grid, .color-wheels-grid, .stats-row, .youtube-stats-banner, .ml-architecture-diagram {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Cursor Elements -->
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-outline" id="cursor-outline"></div>
+
+  <!-- Ambient Glow Orbs -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <!-- Motion Graphics HTML5 Canvas Background -->
+  <canvas id="motion-canvas"></canvas>
+
+  <!-- Top Glass Header -->
+  <header class="glass-header">
+    <a href="#" class="brand-logo" onclick="switchPage('hero'); return false;">
+      <div class="emerald-cube">
+        <i data-lucide="layers" style="width:20px; height:20px;"></i>
+      </div>
+      <div>Ahsan<span>.Dev</span></div>
+    </a>
+
+    <div class="header-actions">
+      <div class="status-badge">
+        <span class="status-pulse"></span>
+        <span>DEPLOYING INTELLIGENCE</span>
+      </div>
+
+      <!-- Quick Audio UI Sound Toggle -->
+      <button class="icon-neu-btn" id="audio-toggle-btn" title="Toggle UI sound effects" onclick="toggleAudio()">
+        <i data-lucide="volume-2" id="audio-icon" style="width:18px; height:18px;"></i>
+      </button>
+
+      <!-- Command Palette Trigger (Cmd+K) -->
+      <button class="icon-neu-btn" title="Command Palette (Ctrl/Cmd+K)" onclick="toggleCommandPalette(true)">
+        <i data-lucide="terminal" style="width:18px; height:18px;"></i>
+      </button>
+
+      <a href="#contact" class="btn-emerald-primary" style="padding: 10px 20px; font-size:0.85rem;" onclick="switchPage('contact'); return false;">
+        <i data-lucide="sparkles" style="width:16px; height:16px;"></i> Hire Ahsan
+      </a>
+    </div>
+  </header>
+
+  <!-- 10-Page Floating Glass Navigation Dock -->
+  <nav class="nav-dock" id="nav-dock">
+    <button class="nav-dot-item active" data-page="hero" onclick="switchPage('hero')">
+      <i data-lucide="home" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">01. Home & Hero</span>
+    </button>
+    <button class="nav-dot-item" data-page="about" onclick="switchPage('about')">
+      <i data-lucide="user" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">02. Ahsan Biography</span>
+    </button>
+    <button class="nav-dot-item" data-page="devops" onclick="switchPage('devops')">
+      <i data-lucide="server" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">03. DevOps Infrastructure</span>
+    </button>
+    <button class="nav-dot-item" data-page="llmops" onclick="switchPage('llmops')">
+      <i data-lucide="cpu" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">04. LLMOps & GenAI</span>
+    </button>
+    <button class="nav-dot-item" data-page="ml" onclick="switchPage('ml')">
+      <i data-lucide="network" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">05. Machine Learning</span>
+    </button>
+    <button class="nav-dot-item" data-page="gamedev" onclick="switchPage('gamedev')">
+      <i data-lucide="gamepad-2" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">06. Game Development</span>
+    </button>
+    <button class="nav-dot-item" data-page="resolve" onclick="switchPage('resolve')">
+      <i data-lucide="film" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">07. DaVinci Resolve</span>
+    </button>
+    <button class="nav-dot-item" data-page="youtube" onclick="switchPage('youtube')">
+      <i data-lucide="youtube" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">08. YouTube & Media</span>
+    </button>
+    <button class="nav-dot-item" data-page="projects" onclick="switchPage('projects')">
+      <i data-lucide="folder-git-2" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">09. Master Projects</span>
+    </button>
+    <button class="nav-dot-item" data-page="contact" onclick="switchPage('contact')">
+      <i data-lucide="send" style="width:18px; height:18px;"></i>
+      <span class="nav-tooltip">10. Terminal & Contact</span>
+    </button>
+  </nav>
+
+  <!-- Main Application Wrapper (10 Distinct Pages) -->
+  <main id="app-container">
+
+    <!-- ==================== PAGE 1: HERO / HOME ==================== -->
+    <section class="page-section active-page" id="page-hero">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-kicker">
+            <i data-lucide="activity" style="width:18px; height:18px;"></i> ARCHITECTING NEXT-GEN SYSTEMS
+          </div>
+          <h1 class="hero-title">
+            Engineering Code, <br />
+            <span class="gradient-text">Models & Cinema.</span>
+          </h1>
+          <p class="section-subtitle">
+            Hello, I am <strong>Ahsan.Dev</strong> — an interdisciplinary technologist bridging high-throughput 
+            <strong>DevOps/LLMOps architectures</strong>, generative neural systems, photorealistic 
+            <strong>Game Engines</strong>, and Hollywood-grade <strong>DaVinci Resolve</strong> visual storytelling.
+          </p>
+
+          <div class="hero-tags">
+            <span class="tag-chip"><i data-lucide="shield-check" style="width:14px; height:14px;"></i> Kubernetes GitOps</span>
+            <span class="tag-chip"><i data-lucide="sparkle" style="width:14px; height:14px;"></i> LLM Fine-Tuning</span>
+            <span class="tag-chip"><i data-lucide="box" style="width:14px; height:14px;"></i> Unreal Engine 5</span>
+            <span class="tag-chip"><i data-lucide="video" style="width:14px; height:14px;"></i> Colorist / Fusion</span>
+            <span class="tag-chip"><i data-lucide="play-circle" style="width:14px; height:14px;"></i> Tech Educator</span>
+          </div>
+
+          <div style="display:flex; gap:16px; margin-top:20px;">
+            <button class="btn-emerald-primary" onclick="switchPage('projects')">
+              <i data-lucide="compass" style="width:18px; height:18px;"></i> Explore System Matrix
+            </button>
+            <button class="btn-emerald-outline" onclick="switchPage('contact')">
+              <i data-lucide="terminal" style="width:18px; height:18px;"></i> Open Terminal
+            </button>
+          </div>
+        </div>
+
+        <!-- 3D Holographic Orbit Card -->
+        <div class="hero-interactive-card">
+          <div class="hero-3d-orbit">
+            <div class="orbit-ring ring-1"></div>
+            <div class="orbit-ring ring-2"></div>
+            <div class="core-avatar">A</div>
+            <div class="floating-mini-badge badge-devops">DevOps & Cloud</div>
+            <div class="floating-mini-badge badge-llmops">LLMOps Agentic</div>
+            <div class="floating-mini-badge badge-resolve">DaVinci Studio</div>
+          </div>
+          <h3 style="font-family:var(--font-heading); font-size:1.4rem; margin-bottom:8px;">Ahsan.Dev Engine</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted); max-width:320px;">
+            Harmonizing algorithmic precision with cinematographic elegance.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 2: ABOUT AHSAN.DEV ==================== -->
+    <section class="page-section" id="page-about">
+      <div class="section-tag"><i data-lucide="info" style="width:14px; height:14px;"></i> 02. The Odyssey</div>
+      <h2 class="section-title">Polymath by Nature. Engineer by Craft.</h2>
+      <p class="section-subtitle">
+        I believe modern computing is no longer isolated to writing backend microservices. The true leverage comes from mastering the full cognitive stack: deploying resilient infrastructure, orchestrating large language models, simulating 3D worlds, and communicating ideas visually to hundreds of thousands of developers worldwide.
+      </p>
+
+      <div class="about-grid">
+        <div class="neu-glass-card">
+          <h3 style="font-family:var(--font-heading); color:var(--emerald-300); margin-bottom:14px;">The Engineering Philosophy</h3>
+          <p style="color:var(--text-muted); line-height:1.7; font-size:0.95rem;">
+            Whether designing self-healing Kubernetes meshes, quantizing 70B parameter models to run at sub-15ms TTFT, or authoring custom HLSL compute shaders, my workflow is rooted in zero-compromise reproducibility, observability, and deterministic performance.
+          </p>
+          <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+            <span class="tag-chip">Decoupled Systems</span>
+            <span class="tag-chip">Continuous Alignment</span>
+            <span class="tag-chip">ACES Color Pipelines</span>
+          </div>
+        </div>
+
+        <div class="neu-glass-card">
+          <h3 style="font-family:var(--font-heading); color:var(--emerald-300); margin-bottom:14px;">Content & Education Mission</h3>
+          <p style="color:var(--text-muted); line-height:1.7; font-size:0.95rem;">
+            As an educator on YouTube, I distill complex engineering whitepapers into digestible 4K visual breakdowns. From dissecting transformer attention mechanisms to live-debugging Terraform state locks, my mission is to elevate the engineering culture globally.
+          </p>
+          <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+            <span class="tag-chip">4K Production</span>
+            <span class="tag-chip">Node-Based Motion FX</span>
+            <span class="tag-chip">Community First</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-number">99.99%</div>
+          <div class="stat-label">SLA Uptime Engineered</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">120K+</div>
+          <div class="stat-label">YouTube Subscribers</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">45+</div>
+          <div class="stat-label">Production Clusters</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">14ms</div>
+          <div class="stat-label">Target LLM Latency</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 3: DEVOPS SPECIALITY ==================== -->
+    <section class="page-section" id="page-devops">
+      <div class="section-tag"><i data-lucide="cloud-lightning" style="width:14px; height:14px;"></i> 03. Infrastructure Orchestration</div>
+      <h2 class="section-title">Zero-Downtime DevOps & Cloud Mesh</h2>
+      <p class="section-subtitle">
+        Architecting robust, immutable cloud foundations with Declarative GitOps, service meshes, eBPF telemetry, and multi-region disaster recovery.
+      </p>
+
+      <div class="pipeline-container">
+        <div style="font-family:var(--font-mono); font-size:0.8rem; color:var(--emerald-400); margin-bottom:16px;">
+          ACTIVE CI/CD TELEMETRY PIPELINE (SIMULATED DUAL-CLUSTER DEPLOYMENT)
+        </div>
+        <div class="pipeline-flow">
+          <div class="pipeline-stage">
+            <div class="stage-icon"><i data-lucide="git-commit"></i></div>
+            <span style="font-size:0.75rem; font-family:var(--font-mono);">01. Commit</span>
+          </div>
+          <div class="pipeline-line"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon"><i data-lucide="shield-alert"></i></div>
+            <span style="font-size:0.75rem; font-family:var(--font-mono);">02. SAST Scan</span>
+          </div>
+          <div class="pipeline-line"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon"><i data-lucide="package"></i></div>
+            <span style="font-size:0.75rem; font-family:var(--font-mono);">03. OCI Build</span>
+          </div>
+          <div class="pipeline-line"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon"><i data-lucide="refresh-cw"></i></div>
+            <span style="font-size:0.75rem; font-family:var(--font-mono);">04. ArgoCD Sync</span>
+          </div>
+          <div class="pipeline-line"></div>
+          <div class="pipeline-stage">
+            <div class="stage-icon"><i data-lucide="check-circle-2"></i></div>
+            <span style="font-size:0.75rem; font-family:var(--font-mono);">05. Edge Live</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="devops-grid">
+        <div class="neu-glass-card">
+          <i data-lucide="container" style="color:var(--emerald-400); width:32px; height:32px; margin-bottom:14px;"></i>
+          <h3 style="font-family:var(--font-heading); margin-bottom:10px;">Kubernetes & Service Mesh</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">
+            Deployment of Istio and Cilium eBPF overlays across multi-tenant bare-metal & cloud clusters with mutual TLS and fine-grained network policies.
+          </p>
+        </div>
+        <div class="neu-glass-card">
+          <i data-lucide="code-2" style="color:var(--emerald-400); width:32px; height:32px; margin-bottom:14px;"></i>
+          <h3 style="font-family:var(--font-heading); margin-bottom:10px;">Infrastructure as Code</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">
+            Modular Terraform & OpenTofu architectures with Terragrunt layering, drift detection, and automated preview comments on pull requests.
+          </p>
+        </div>
+        <div class="neu-glass-card">
+          <i data-lucide="activity" style="color:var(--emerald-400); width:32px; height:32px; margin-bottom:14px;"></i>
+          <h3 style="font-family:var(--font-heading); margin-bottom:10px;">Observability & SRE</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6;">
+            Unified dashboards using Prometheus, Grafana, OpenTelemetry, and Loki with automated synthetic canary probes and pager escalation alerts.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 4: LLMOPS & GENAI ==================== -->
+    <section class="page-section" id="page-llmops">
+      <div class="section-tag"><i data-lucide="sparkles" style="width:14px; height:14px;"></i> 04. AI Systems Engineering</div>
+      <h2 class="section-title">LLMOps, Fine-Tuning & Agentic RAG</h2>
+      <p class="section-subtitle">
+        Bridging the gap between raw models and low-latency production inference. Specialized in vLLM serving, LoRA adapters, semantic caching, and guardrail enforcement.
+      </p>
+
+      <div class="llmops-workbench">
+        <div class="neu-glass-card">
+          <h3 style="font-family:var(--font-heading); margin-bottom:16px;">Production Inference Benchmarks</h3>
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Model Architecture</th>
+                <th>Quant</th>
+                <th>TTFT</th>
+                <th>Tokens/s</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Llama 3.3 70B Instruct</td>
+                <td>FP8 AWQ</td>
+                <td>18.4ms</td>
+                <td>92.4 t/s</td>
+              </tr>
+              <tr>
+                <td>DeepSeek R1 Distill</td>
+                <td>GGUF Q6_K</td>
+                <td>12.1ms</td>
+                <td>118.0 t/s</td>
+              </tr>
+              <tr>
+                <td>Mistral Nemo 12B</td>
+                <td>bfloat16</td>
+                <td>9.8ms</td>
+                <td>145.2 t/s</td>
+              </tr>
+              <tr>
+                <td>Custom Domain Embedder</td>
+                <td>FP16 ONNX</td>
+                <td>3.1ms</td>
+                <td>620.0 t/s</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:24px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-family:var(--font-mono);">
+              <span>KV Cache Utilization (Dynamic PagedAttention)</span>
+              <span style="color:var(--emerald-400);">78.4%</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" style="width: 78.4%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="neu-glass-card">
+          <h3 style="font-family:var(--font-heading); margin-bottom:16px;">Agentic RAG Routing Architecture</h3>
+          <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.6; margin-bottom:16px;">
+            Self-corrective retrieval graph featuring query decomposition, HyDE (Hypothetical Document Embeddings), and dynamic re-ranking via Cohere Rerank 3.
+          </p>
+          <div style="background:rgba(2,12,7,0.7); padding:16px; border-radius:14px; border:1px solid rgba(52,211,153,0.15); font-family:var(--font-mono); font-size:0.8rem; color:#a7f3d0; line-height:1.8;">
+            <div>> User Prompt -> Semantic Cache (Redis) -> [HIT/MISS]</div>
+            <div>> VectorDB Query -> Qdrant Hybrid (Dense + BM25)</div>
+            <div>> Context Compression -> Cross-Encoder Score >= 0.88</div>
+            <div>> Guardrail Eval -> NeMo Guardrails -> Final Stream Response</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 5: MACHINE LEARNING ==================== -->
+    <section class="page-section" id="page-ml">
+      <div class="section-tag"><i data-lucide="brain-circuit" style="width:14px; height:14px;"></i> 05. Deep Learning Research</div>
+      <h2 class="section-title">Machine Learning & Neural Architectures</h2>
+      <p class="section-subtitle">
+        Developing tailored PyTorch models, visual recognition engines, unsupervised anomaly detection algorithms, and self-supervised audio-visual pipelines.
+      </p>
+
+      <div class="ml-architecture-diagram">
+        <div class="layer-card">
+          <h4>01. Ingestion</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Ray Data streaming, distributed tokenization & data augmentation</p>
+        </div>
+        <div class="layer-card">
+          <h4>02. Feature Space</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Sparse autoencoders, high-dimensional latent projection</p>
+        </div>
+        <div class="layer-card">
+          <h4>03. Backbone</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">FlashAttention-2 Transformer & ConvNeXt Hybrid backbones</p>
+        </div>
+        <div class="layer-card">
+          <h4>04. Alignment</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Direct Preference Optimization (DPO) and RL with Verifiable Rewards</p>
+        </div>
+      </div>
+
+      <div class="neu-glass-card">
+        <h3 style="font-family:var(--font-heading); margin-bottom:16px;">Core Research Domains</h3>
+        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:20px;">
+          <div>
+            <h4 style="color:var(--emerald-300); margin-bottom:6px;">Computer Vision & Neural Radiance</h4>
+            <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6;">
+              3D Gaussian Splatting workflows, automated camera parameter extraction, and real-time semantic segmentation for robotic perception.
+            </p>
+          </div>
+          <div>
+            <h4 style="color:var(--emerald-300); margin-bottom:6px;">Distributed Training Systems</h4>
+            <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6;">
+              DeepSpeed ZeRO-3 optimization across multi-node GPU clusters, PyTorch FSDP, and automatic mixed precision (AMP) scaling.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 6: GAME DEVELOPMENT ==================== -->
+    <section class="page-section" id="page-gamedev">
+      <div class="section-tag"><i data-lucide="gamepad" style="width:14px; height:14px;"></i> 06. Interactive Realtime Worlds</div>
+      <h2 class="section-title">Unreal Engine 5, Unity & Shader Matrix</h2>
+      <p class="section-subtitle">
+        Crafting immersive worlds, procedural generation engines, real-time HLSL compute shaders, and low-latency C++ game loops.
+      </p>
+
+      <div class="gamedev-viewport-box">
+        <canvas id="game-canvas"></canvas>
+        <div class="viewport-overlay">
+          <span>● REALTIME VIEWPORT: PROCEDURAL EMERALD ORB SHADER (60 FPS)</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:24px;">
+        <div class="neu-glass-card">
+          <i data-lucide="box" style="color:var(--emerald-400); width:28px; height:28px; margin-bottom:12px;"></i>
+          <h4 style="font-family:var(--font-heading); margin-bottom:8px;">Unreal Engine 5 Lumen & Nanite</h4>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6;">
+            Photorealistic rendering workflows, Niagara particle dynamics, and custom Gameplay Ability Systems (GAS) in pure C++.
+          </p>
+        </div>
+        <div class="neu-glass-card">
+          <i data-lucide="cpu" style="color:var(--emerald-400); width:28px; height:28px; margin-bottom:12px;"></i>
+          <h4 style="font-family:var(--font-heading); margin-bottom:8px;">Unity DOTS & ECS</h4>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6;">
+            High-scale simulation handling 100,000+ simultaneous on-screen entities using the Burst Compiler and Job System.
+          </p>
+        </div>
+        <div class="neu-glass-card">
+          <i data-lucide="zap" style="color:var(--emerald-400); width:28px; height:28px; margin-bottom:12px;"></i>
+          <h4 style="font-family:var(--font-heading); margin-bottom:8px;">Shader Programming</h4>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6;">
+            Authoring post-processing filters, raymarched volumetric fog, refractive emerald glass, and holographic vertex distortion.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 7: DAVINCI RESOLVE & MOTION ==================== -->
+    <section class="page-section" id="page-resolve">
+      <div class="section-tag"><i data-lucide="clapperboard" style="width:14px; height:14px;"></i> 07. Visual Mastery</div>
+      <h2 class="section-title">DaVinci Resolve Studio & Node Compositing</h2>
+      <p class="section-subtitle">
+        Certified color grading, ACEScc color science, dynamic range compression, and high-impact Fusion motion graphics for cinema and digital media.
+      </p>
+
+      <div class="color-wheels-grid">
+        <!-- Lift Wheel -->
+        <div class="wheel-card">
+          <h4 style="font-family:var(--font-heading); color:var(--emerald-300);">LIFT / SHADOWS</h4>
+          <div class="interactive-wheel" id="wheel-lift" onmousemove="handleWheelDrag(event, 'lift')">
+            <div class="wheel-inner-target">
+              <div class="wheel-cursor-point" id="cursor-lift"></div>
+            </div>
+          </div>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">RGB Offset: <span id="val-lift" style="color:var(--emerald-400);">0.00 / 0.04 / 0.01</span></div>
+        </div>
+
+        <!-- Gamma Wheel -->
+        <div class="wheel-card">
+          <h4 style="font-family:var(--font-heading); color:var(--emerald-300);">GAMMA / MIDTONES</h4>
+          <div class="interactive-wheel" id="wheel-gamma" onmousemove="handleWheelDrag(event, 'gamma')">
+            <div class="wheel-inner-target">
+              <div class="wheel-cursor-point" id="cursor-gamma"></div>
+            </div>
+          </div>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">RGB Offset: <span id="val-gamma" style="color:var(--emerald-400);">0.02 / 0.12 / 0.05</span></div>
+        </div>
+
+        <!-- Gain Wheel -->
+        <div class="wheel-card">
+          <h4 style="font-family:var(--font-heading); color:var(--emerald-300);">GAIN / HIGHLIGHTS</h4>
+          <div class="interactive-wheel" id="wheel-gain" onmousemove="handleWheelDrag(event, 'gain')">
+            <div class="wheel-inner-target">
+              <div class="wheel-cursor-point" id="cursor-gain"></div>
+            </div>
+          </div>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">RGB Offset: <span id="val-gain" style="color:var(--emerald-400);">0.05 / 0.18 / 0.08</span></div>
+        </div>
+      </div>
+
+      <div class="neu-glass-card">
+        <h3 style="font-family:var(--font-heading); margin-bottom:14px;">Fusion VFX & Color Science Capabilities</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.7;">
+          From match-moving 3D cameras and planar tracking to building procedural film emulsion LUTs with Kodak 2383 characteristics, I combine node-based post-production pipelines directly into game engines and video workflows.
+        </p>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 8: YOUTUBE & MEDIA ==================== -->
+    <section class="page-section" id="page-youtube">
+      <div class="section-tag"><i data-lucide="play-square" style="width:14px; height:14px;"></i> 08. Broadcast & Reach</div>
+      <h2 class="section-title">YouTuber & Engineering Storyteller</h2>
+      <p class="section-subtitle">
+        Documenting deep technical deep-dives with cinema-grade motion graphics, live code, and comprehensive system teardowns.
+      </p>
+
+      <div class="youtube-stats-banner">
+        <div class="stat-box">
+          <div class="stat-number">120,000+</div>
+          <div class="stat-label">Subscribers</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">8.4M+</div>
+          <div class="stat-label">Total Watch Views</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">185+</div>
+          <div class="stat-label">Deep Dive Videos</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">98.2%</div>
+          <div class="stat-label">Positive Sentiment</div>
+        </div>
+      </div>
+
+      <div class="video-card-grid">
+        <div class="neu-glass-card">
+          <div class="video-mockup">
+            <div class="play-pulse-btn"><i data-lucide="play"></i></div>
+          </div>
+          <h4 style="font-family:var(--font-heading); margin-bottom:6px;">Building a Distributed LLM Cluster in 24 Hours</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">vLLM, RoCE networking, PagedAttention optimizations and live Kubernetes stress testing.</p>
+        </div>
+
+        <div class="neu-glass-card">
+          <div class="video-mockup">
+            <div class="play-pulse-btn"><i data-lucide="play"></i></div>
+          </div>
+          <h4 style="font-family:var(--font-heading); margin-bottom:6px;">DaVinci Resolve Fusion: Master Node Compositing</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Step-by-step masterclass on particle simulations, ACES workflows, and custom look creation.</p>
+        </div>
+
+        <div class="neu-glass-card">
+          <div class="video-mockup">
+            <div class="play-pulse-btn"><i data-lucide="play"></i></div>
+          </div>
+          <h4 style="font-family:var(--font-heading); margin-bottom:6px;">Unreal Engine 5 HLSL Compute Shader Crash Course</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Writing real-time fluid dynamics directly on the GPU using Custom Node expressions in UE5.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 9: PROJECTS MATRIX ==================== -->
+    <section class="page-section" id="page-projects">
+      <div class="section-tag"><i data-lucide="layers" style="width:14px; height:14px;"></i> 09. Featured Deployments</div>
+      <h2 class="section-title">Production Systems & Realizations</h2>
+      <p class="section-subtitle">
+        Curated showcase of enterprise cloud infrastructure, high-throughput model routers, standalone game systems, and cinematic reels.
+      </p>
+
+      <div class="filter-pills">
+        <button class="filter-btn active" onclick="filterProjects('all', this)">All Deployments</button>
+        <button class="filter-btn" onclick="filterProjects('devops', this)">DevOps & Cloud</button>
+        <button class="filter-btn" onclick="filterProjects('llm', this)">LLMOps & AI</button>
+        <button class="filter-btn" onclick="filterProjects('game', this)">Game & Shaders</button>
+        <button class="filter-btn" onclick="filterProjects('video', this)">Cinema & VFX</button>
+      </div>
+
+      <div class="projects-grid" id="projects-container">
+        <!-- Project 1 -->
+        <div class="neu-glass-card project-card" data-category="devops">
+          <div class="section-tag" style="margin-bottom:8px;">DevOps</div>
+          <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:8px;">AetherMesh Kubernetes GitOps</h3>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6; margin-bottom:14px;">
+            Multi-cloud cluster fleet management engine running Cilium mesh, automated Vault secret rotations, and Canary rollouts.
+          </p>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Go • Terraform • ArgoCD • Cilium</div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="neu-glass-card project-card" data-category="llm">
+          <div class="section-tag" style="margin-bottom:8px;">LLMOps</div>
+          <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:8px;">OmniPrompt Router 70B</h3>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6; margin-bottom:14px;">
+            Intelligent semantic routing gateway directing queries across SLMs, speculative decoders, and reasoning models.
+          </p>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Python • vLLM • Redis • Qdrant</div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="neu-glass-card project-card" data-category="game">
+          <div class="section-tag" style="margin-bottom:8px;">Game Dev</div>
+          <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:8px;">Chronosphere UE5 Tech Demo</h3>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6; margin-bottom:14px;">
+            Real-time physics puzzle experience showcasing procedural geometry destruction, volumetric cloud rays, and Lumen GI.
+          </p>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Unreal 5.4 • C++ • Niagara • HLSL</div>
+        </div>
+
+        <!-- Project 4 -->
+        <div class="neu-glass-card project-card" data-category="video">
+          <div class="section-tag" style="margin-bottom:8px;">Cinema / Fusion</div>
+          <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:8px;">Emerald Cinematic LUT Suite</h3>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6; margin-bottom:14px;">
+            Parametric color transform profiles engineered for ARRI LogC3/4 and RED IPP2 with natural skin-tone highlights.
+          </p>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">DaVinci Resolve • ACEScc • DCTL</div>
+        </div>
+
+        <!-- Project 5 -->
+        <div class="neu-glass-card project-card" data-category="llm">
+          <div class="section-tag" style="margin-bottom:8px;">Machine Learning</div>
+          <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:8px;">AudioVisual Neural Synapse</h3>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6; margin-bottom:14px;">
+            Cross-modal contrastive model synchronizing spoken audio timestamps with procedural game environment changes.
+          </p>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">PyTorch • Transformers • ONNX Runtime</div>
+        </div>
+
+        <!-- Project 6 -->
+        <div class="neu-glass-card project-card" data-category="devops">
+          <div class="section-tag" style="margin-bottom:8px;">DevOps</div>
+          <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:8px;">EdgeGuard eBPF Telemetry</h3>
+          <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.6; margin-bottom:14px;">
+            Kernel-level network inspector dropping unauthorized TCP flows in under 2 microseconds at 40 Gbps line rate.
+          </p>
+          <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Rust • eBPF • Linux Kernel • Grafana</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 10: INTERACTIVE TERMINAL & CONTACT ==================== -->
+    <section class="page-section" id="page-contact">
+      <div class="section-tag"><i data-lucide="terminal" style="width:14px; height:14px;"></i> 10. Direct Line</div>
+      <h2 class="section-title">Command Terminal & Collaboration</h2>
+      <p class="section-subtitle">
+        Type direct CLI commands or send a secure transmission to discuss consulting, enterprise architecture, or sponsorship.
+      </p>
+
+      <div class="contact-layout">
+        <!-- Interactive Terminal -->
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.75rem;">ahsan@devops-cluster-node-01:~</div>
+            <i data-lucide="terminal" style="width:14px; height:14px; color:var(--emerald-400);"></i>
+          </div>
+          <div class="terminal-body" id="terminal-content">
+            <div>Welcome to <strong>Ahsan.Dev CLI v3.8.4</strong>.</div>
+            <div>Type <span style="color:#fff; font-weight:700;">help</span> to inspect available executable commands.</div>
+            <div>--------------------------------------------------</div>
+            <div>[STATUS] Multi-Region Gateway: ONLINE</div>
+            <div>[STATUS] Kubernetes Workloads: 100% HEALTHY</div>
+            <div>[STATUS] LLM Inference Latency: 14.2ms</div>
+          </div>
+          <div style="padding:12px 18px; border-top:1px solid rgba(52,211,153,0.15);">
+            <div class="terminal-input-row">
+              <span class="terminal-prompt">ahsan.dev ></span>
+              <input type="text" id="terminal-input" class="terminal-cli-input" placeholder="Type 'help', 'skills', 'whoami', 'clear'..." autocomplete="off" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Glassmorphism + Neumorphic Contact Form -->
+        <div class="neu-glass-card">
+          <h3 style="font-family:var(--font-heading); margin-bottom:20px; color:var(--text-main);">Transmit Message</h3>
+          <form id="contact-form" onsubmit="handleFormSubmit(event)">
+            <div class="form-group">
+              <label class="form-label">IDENTITY / NAME</label>
+              <input type="text" class="neu-input" required placeholder="Dr. Sarah Connor" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">DIGITAL COORDINATES / EMAIL</label>
+              <input type="email" class="neu-input" required placeholder="s.connor@cyberdyne.io" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">OBJECTIVE / SCOPE</label>
+              <textarea class="neu-textarea" rows="4" required placeholder="We need your expertise in building an enterprise LLMOps pipeline and training custom game shaders..."></textarea>
+            </div>
+            <button type="submit" class="btn-emerald-primary" style="width:100%; justify-content:center;">
+              <i data-lucide="send" style="width:18px; height:18px;"></i> Dispatch Encrypted Signal
+            </button>
+            <div id="form-feedback" style="display:none; margin-top:14px; color:var(--emerald-300); font-family:var(--font-mono); font-size:0.85rem; text-align:center;">
+              ✓ Signal successfully transmitted to Ahsan's private cluster!
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Command Palette Modal (Cmd+K) -->
+  <div class="modal-overlay" id="cmd-modal" onclick="if(event.target === this) toggleCommandPalette(false)">
+    <div class="cmd-palette">
+      <div class="cmd-input-wrap">
+        <i data-lucide="search" style="color:var(--emerald-400);"></i>
+        <input type="text" id="cmd-search" class="cmd-search-input" placeholder="Type a page, command or domain (e.g. LLMOps, DaVinci)..." oninput="filterPalette()" />
+        <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted); background:rgba(255,255,255,0.06); padding:4px 8px; border-radius:6px;">ESC</span>
+      </div>
+      <div class="cmd-results-list" id="cmd-results">
+        <div class="cmd-item" onclick="quickNav('hero')">
+          <span><i data-lucide="home" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 01. Home & Hero Section</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 1</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('about')">
+          <span><i data-lucide="user" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 02. About Ahsan.Dev Biography</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 2</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('devops')">
+          <span><i data-lucide="server" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 03. DevOps CI/CD & Kubernetes</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 3</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('llmops')">
+          <span><i data-lucide="cpu" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 04. LLMOps & GenAI Workbenches</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 4</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('ml')">
+          <span><i data-lucide="network" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 05. Machine Learning Architectures</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 5</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('gamedev')">
+          <span><i data-lucide="gamepad-2" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 06. Unreal Engine 5 & Game Dev</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 6</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('resolve')">
+          <span><i data-lucide="film" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 07. DaVinci Resolve Studio & Fusion</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 7</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('youtube')">
+          <span><i data-lucide="youtube" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 08. YouTube Channel & Stats</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 8</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('projects')">
+          <span><i data-lucide="folder-git-2" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 09. Master Projects Gallery</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 9</span>
+        </div>
+        <div class="cmd-item" onclick="quickNav('contact')">
+          <span><i data-lucide="send" style="width:16px; height:16px; display:inline; margin-right:8px;"></i> 10. Terminal & Contact</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--emerald-400);">Page 10</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Engine -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    /* =========================================================================
+       1. SYNTHETIC WEB AUDIO UI SOUND GENERATOR (Neumorphic Clicks & Chimes)
+       ========================================================================= */
+    let audioEnabled = true;
+    let audioCtx = null;
+
+    function playTone(freq = 440, type = 'sine', duration = 0.08) {
+      if (!audioEnabled) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        // audio context fallback
+      }
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      const icon = document.getElementById('audio-icon');
+      if (audioEnabled) {
+        icon.setAttribute('data-lucide', 'volume-2');
+        playTone(660, 'sine', 0.1);
+      } else {
+        icon.setAttribute('data-lucide', 'volume-x');
+      }
+      lucide.createIcons();
+    }
+
+    // Attach subtle sounds to button hovers and clicks
+    document.addEventListener('mouseover', (e) => {
+      if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.interactive-wheel')) {
+        playTone(380, 'triangle', 0.04);
+      }
+    });
+
+    /* =========================================================================
+       2. CUSTOM CURSOR TRACKER
+       ========================================================================= */
+    const dot = document.getElementById('cursor-dot');
+    const outline = document.getElementById('cursor-outline');
+
+    window.addEventListener('mousemove', (e) => {
+      const { clientX: x, clientY: y } = e;
+      dot.style.left = `${x}px`;
+      dot.style.top = `${y}px`;
+
+      outline.animate({
+        left: `${x}px`,
+        top: `${y}px`
+      }, { duration: 250, fill: "forwards" });
+    });
+
+    /* =========================================================================
+       3. INTERACTIVE 10-PAGE ROUTER (SPA State Controller)
+       ========================================================================= */
+    const pages = ['hero', 'about', 'devops', 'llmops', 'ml', 'gamedev', 'resolve', 'youtube', 'projects', 'contact'];
+    let currentPage = 'hero';
+
+    function switchPage(pageId) {
+      if (!pages.includes(pageId)) return;
+      currentPage = pageId;
+      playTone(520, 'sine', 0.07);
+
+      // Transition pages
+      pages.forEach(p => {
+        const el = document.getElementById(`page-${p}`);
+        if (el) el.classList.remove('active-page');
+      });
+
+      const target = document.getElementById(`page-${pageId}`);
+      if (target) {
+        target.classList.add('active-page');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Update Navigation Dock items
+      document.querySelectorAll('.nav-dot-item').forEach(btn => {
+        if (btn.getAttribute('data-page') === pageId) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    /* =========================================================================
+       4. HTML5 CANVAS MOTION GRAPHICS PARTICLE SYSTEM
+       ========================================================================= */
+    const canvas = document.getElementById('motion-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    const particleCount = 75;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.8;
+        this.vy = (Math.random() - 0.5) * 0.8;
+        this.size = Math.random() * 2 + 1;
+        this.alpha = Math.random() * 0.5 + 0.2;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+      }
+      draw() {
+        ctx.fillStyle = `rgba(52, 211, 153, ${this.alpha})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Connect nodes within proximity
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            ctx.strokeStyle = `rgba(16, 185, 129, ${0.18 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    /* =========================================================================
+       5. GAME DEV PROCEDURAL VIEWPORT CANVAS (Page 6 simulation)
+       ========================================================================= */
+    const gameCanvas = document.getElementById('game-canvas');
+    if (gameCanvas) {
+      const gCtx = gameCanvas.getContext('2d');
+      let angle = 0;
+
+      function renderGameLoop() {
+        gameCanvas.width = gameCanvas.parentElement.clientWidth;
+        gameCanvas.height = gameCanvas.parentElement.clientHeight;
+
+        gCtx.fillStyle = '#020e08';
+        gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+        const centerX = gameCanvas.width / 2;
+        const centerY = gameCanvas.height / 2;
+
+        // Render rotating 3D wireframe geometric emerald cube
+        angle += 0.015;
+        const size = 65;
+        const nodes = [
+          [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+          [-1, -1, 1],  [1, -1, 1],  [1, 1, 1],  [-1, 1, 1]
+        ];
+
+        const projected = nodes.map(([x, y, z]) => {
+          // Rotate around X and Y
+          let radX = angle;
+          let radY = angle * 0.8;
+          let y1 = y * Math.cos(radX) - z * Math.sin(radX);
+          let z1 = y * Math.sin(radX) + z * Math.cos(radX);
+          let x2 = x * Math.cos(radY) + z1 * Math.sin(radY);
+          let z2 = -x * Math.sin(radY) + z1 * Math.cos(radY);
+          let distance = 3.5;
+          let fov = 280;
+          let scale = fov / (distance + z2);
+          return [centerX + x2 * size * (scale / 100), centerY + y1 * size * (scale / 100)];
+        });
+
+        const edges = [
+          [0,1],[1,2],[2,3],[3,0],
+          [4,5],[5,6],[6,7],[7,4],
+          [0,4],[1,5],[2,6],[3,7]
+        ];
+
+        gCtx.strokeStyle = '#10b981';
+        gCtx.lineWidth = 1.8;
+        gCtx.shadowColor = '#34d399';
+        gCtx.shadowBlur = 15;
+
+        edges.forEach(([s, e]) => {
+          gCtx.beginPath();
+          gCtx.moveTo(projected[s][0], projected[s][1]);
+          gCtx.lineTo(projected[e][0], projected[e][1]);
+          gCtx.stroke();
+        });
+
+        requestAnimationFrame(renderGameLoop);
+      }
+      renderGameLoop();
+    }
+
+    /* =========================================================================
+       6. DAVINCI RESOLVE INTERACTIVE COLOR WHEELS
+       ========================================================================= */
+    function handleWheelDrag(event, wheelType) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = event.clientX - rect.left - rect.width / 2;
+      const y = event.clientY - rect.top - rect.height / 2;
+      const radius = rect.width / 2;
+      const dist = Math.sqrt(x * x + y * y);
+
+      if (dist <= radius) {
+        const cursor = document.getElementById(`cursor-${wheelType}`);
+        const valDisplay = document.getElementById(`val-${wheelType}`);
+        
+        cursor.style.left = `${50 + (x / radius) * 45}%`;
+        cursor.style.top = `${50 + (y / radius) * 45}%`;
+
+        const rVal = ((x / radius) * 0.15).toFixed(2);
+        const gVal = ((-y / radius) * 0.25).toFixed(2);
+        const bVal = ((dist / radius) * 0.1).toFixed(2);
+        valDisplay.innerText = `${rVal} / ${gVal} / ${bVal}`;
+      }
+    }
+
+    /* =========================================================================
+       7. PROJECTS FILTERING LOGIC
+       ========================================================================= */
+    function filterProjects(cat, btn) {
+      playTone(480, 'sine', 0.05);
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const cards = document.querySelectorAll('.project-card');
+      cards.forEach(card => {
+        if (cat === 'all' || card.getAttribute('data-category') === cat) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    /* =========================================================================
+       8. INTERACTIVE TERMINAL (PAGE 10)
+       ========================================================================= */
+    const cliInput = document.getElementById('terminal-input');
+    const cliBody = document.getElementById('terminal-content');
+
+    if (cliInput) {
+      cliInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const cmd = cliInput.value.trim().toLowerCase();
+          playTone(600, 'square', 0.04);
+          executeCliCommand(cmd);
+          cliInput.value = '';
+        }
+      });
+    }
+
+    function executeCliCommand(cmd) {
+      const output = document.createElement('div');
+      output.style.marginTop = '6px';
+
+      switch (cmd) {
+        case 'help':
+          output.innerHTML = `
+            <div style="color:var(--emerald-400);">Available Commands:</div>
+            <div>• <strong style="color:#fff;">skills</strong>     - Print core competency matrix</div>
+            <div>• <strong style="color:#fff;">whoami</strong>     - Details about Ahsan.Dev</div>
+            <div>• <strong style="color:#fff;">goto [page]</strong>- Quick navigate (e.g. 'goto llmops')</div>
+            <div>• <strong style="color:#fff;">clear</strong>      - Clear the current terminal buffer</div>
+            <div>• <strong style="color:#fff;">ping</strong>       - Test cluster latency</div>
+          `;
+          break;
+        case 'skills':
+          output.innerHTML = `
+            <span style="color:#34d399;">CORE STACK:</span> Kubernetes, Terraform, ArgoCD, vLLM, PyTorch, Unreal Engine 5, Unity C#, DaVinci Resolve Studio ACEScc, HLSL, Python, Go.
+          `;
+          break;
+        case 'whoami':
+          output.innerHTML = `
+            <span style="color:#34d399;">Ahsan.Dev</span> — DevOps & Cloud Specialist, AI/LLMOps Architect, Game Developer, Colorist and Tech Content Creator.
+          `;
+          break;
+        case 'clear':
+          cliBody.innerHTML = '';
+          return;
+        case 'ping':
+          output.innerHTML = `<span style="color:#34d399;">64 bytes from cluster-us-east-1: icmp_seq=1 ttl=58 time=12.4 ms</span>`;
+          break;
+        default:
+          if (cmd.startsWith('goto ')) {
+            const dest = cmd.split(' ')[1];
+            if (pages.includes(dest)) {
+              switchPage(dest);
+              output.innerHTML = `<span style="color:#34d399;">Navigating to ${dest}...</span>`;
+            } else {
+              output.innerHTML = `<span style="color:#ef4444;">Error: Unknown page '${dest}'. Try 'goto llmops', 'goto gamedev', etc.</span>`;
+            }
+          } else {
+            output.innerHTML = `<span style="color:#ef4444;">command not found: ${cmd}. Type 'help' for options.</span>`;
+          }
+      }
+      cliBody.appendChild(output);
+      cliBody.scrollTop = cliBody.scrollHeight;
+    }
+
+    /* =========================================================================
+       9. COMMAND PALETTE (Ctrl+K / Cmd+K)
+       ========================================================================= */
+    const cmdModal = document.getElementById('cmd-modal');
+    const cmdSearch = document.getElementById('cmd-search');
+
+    function toggleCommandPalette(show) {
+      if (show) {
+        playTone(700, 'sine', 0.08);
+        cmdModal.classList.add('active');
+        cmdSearch.focus();
+      } else {
+        cmdModal.classList.remove('active');
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        toggleCommandPalette(!cmdModal.classList.contains('active'));
+      }
+      if (e.key === 'Escape' && cmdModal.classList.contains('active')) {
+        toggleCommandPalette(false);
+      }
+    });
+
+    function quickNav(pageId) {
+      toggleCommandPalette(false);
+      switchPage(pageId);
+    }
+
+    function filterPalette() {
+      const q = cmdSearch.value.toLowerCase();
+      document.querySelectorAll('#cmd-results .cmd-item').forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    /* =========================================================================
+       10. FORM TRANSMISSION SUBMISSION
+       ========================================================================= */
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      playTone(880, 'sine', 0.15);
+      const feedback = document.getElementById('form-feedback');
+      feedback.style.display = 'block';
+      setTimeout(() => {
+        feedback.style.display = 'none';
+        e.target.reset();
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
